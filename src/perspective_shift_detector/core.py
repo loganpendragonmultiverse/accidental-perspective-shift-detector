@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from itertools import pairwise
 from typing import Any
 
 PROJECT = "accidental-perspective-shift-detector"
@@ -16,10 +17,23 @@ def _require(data: dict[str, Any], key: str) -> Any:
 
 def _perspective(data: dict[str, Any]) -> dict[str, Any]:
     text = str(_require(data, "text"))
-    groups = {
-        "first": set(["i", "me", "my", "mine", "we", "us", "our", "ours"]),
-        "second": set(["you", "your", "yours"]),
-        "third": set(["he", "him", "his", "she", "her", "hers", "they", "them", "their", "theirs", "it", "its"]),
+    groups: dict[str, set[str]] = {
+        "first": {"i", "me", "my", "mine", "we", "us", "our", "ours"},
+        "second": {"you", "your", "yours"},
+        "third": {
+            "he",
+            "him",
+            "his",
+            "she",
+            "her",
+            "hers",
+            "they",
+            "them",
+            "their",
+            "theirs",
+            "it",
+            "its",
+        },
     }
     rows = []
     for number, paragraph in enumerate(
@@ -28,7 +42,7 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
         unquoted = re.sub('[\\"“].*?[\\"”]', "", paragraph)
         words = re.findall("\\b[a-z]+\\b", unquoted.casefold())
         counts = {key: sum(word in values for word in words) for key, values in groups.items()}
-        dominant = max(counts, key=counts.get) if max(counts.values()) else "unknown"
+        dominant = max(counts, key=lambda key: counts[key]) if max(counts.values()) else "unknown"
         rows.append(
             {"paragraph": number, "dominant": dominant, "counts": counts, "preview": paragraph[:80]}
         )
@@ -39,7 +53,7 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
             "from_person": left["dominant"],
             "to_person": right["dominant"],
         }
-        for left, right in zip(rows, rows[1:])
+        for left, right in pairwise(rows)
         if "unknown" not in (left["dominant"], right["dominant"])
         and left["dominant"] != right["dominant"]
     ]
