@@ -18,7 +18,7 @@ def _require(data: dict[str, Any], key: str) -> Any:
 def _perspective(data: dict[str, Any]) -> dict[str, Any]:
     text = data.get("text", "")
     if not isinstance(text, str):
-        raise ValueError("text must be a string")
+        raise TypeError("text must be a string")
     groups: dict[str, set[str]] = {
         "first": {"i", "me", "my", "mine", "we", "us", "our", "ours"},
         "second": {"you", "your", "yours"},
@@ -65,7 +65,7 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
         if not isinstance(intended, str) or intended not in {*groups, "unspecified"}:
             raise ValueError(f"scenes[{scene_index}].intended_viewpoint is invalid")
         if not isinstance(note, str):
-            raise ValueError(f"scenes[{scene_index}].suppression_note must be text")
+            raise TypeError(f"scenes[{scene_index}].suppression_note must be text")
         for paragraph in (
             item.strip() for item in re.split("\\n\\s*\\n", scene["text"]) if item.strip()
         ):
@@ -135,7 +135,7 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
 
 def analyze(data: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(data, dict):
-        raise ValueError("input must be a JSON object")
+        raise TypeError("input must be a JSON object")
     return {"version": 1, "project": PROJECT, **_perspective(data)}
 
 

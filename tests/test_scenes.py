@@ -48,5 +48,5 @@ def test_custom_rules_and_ties() -> None:
     ],
 )
 def test_invalid_scene_contract(data) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises((ValueError, TypeError)):
         analyze(data)
