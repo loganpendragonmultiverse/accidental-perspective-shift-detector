@@ -38,3 +38,13 @@ python -m build
 The project is feature-complete for its documented v1 scope. Maintenance focuses on correctness, security, compatibility, and well-supported input improvements.
 
 Part of the [Logan Pendragon Forge open-source collection](https://www.loganpendragonforge.com/open-source/). Licensed under the [MIT License](LICENSE).
+
+## Version 1.1.0: reviewed improvements
+
+Add explicit scene contracts, viewpoint intent, suppression notes and configurable quote-aware pronoun evidence.
+
+```bash
+perspective-shifts examples/sample.json --format markdown
+```
+
+Supply `scenes` as text objects with optional `intended_viewpoint` (first, second, third, unspecified) and `suppression_note`. Transitions between scenes do not produce shift warnings; a suppression note keeps evidence but suppresses that scene's prompts. Optional `pronoun_rules` supplies first/second/third word arrays, which must not overlap. Evidence gives character offsets and Markdown highlighting outside recognized quotation spans. Tied pronoun counts are unknown. Quotation parsing and viewpoint inference remain heuristics for author review, not findings of narrative errors.
