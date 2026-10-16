@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "accidental-perspective-shift-detector"
-version = "1.1.0"
+version = "1.2.0"
 description = "Highlight possible unintended changes in grammatical person across manuscript paragraphs."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -36,3 +36,7 @@ omit = ["src/*/__main__.py"]
 testpaths = ["tests"]
 addopts = "--cov=perspective_shift_detector --cov-branch --cov-report=term-missing --cov-fail-under=90"
 
+
+[tool.setuptools.data-files]
+"share/doc/accidental-perspective-shift-detector" = ["README.md", "CHANGELOG.md", "DEVELOPMENT.md", "TESTING.md"]
+"share/doc/accidental-perspective-shift-detector/examples" = ["examples/sample.json", "examples/feature.json"]
