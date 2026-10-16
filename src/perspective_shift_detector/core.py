@@ -52,6 +52,9 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
     scenes = data.get("scenes", [{"text": text}])
     if not isinstance(scenes, list) or not scenes:
         raise ValueError("scenes must be a nonempty array")
+    include_spans = data.get("include_source_spans", False)
+    if not isinstance(include_spans, bool):
+        raise TypeError("include_source_spans must be a boolean")
     rows: list[dict[str, Any]] = []
     for scene_index, scene in enumerate(scenes, 1):
         if (
@@ -66,9 +69,14 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"scenes[{scene_index}].intended_viewpoint is invalid")
         if not isinstance(note, str):
             raise TypeError(f"scenes[{scene_index}].suppression_note must be text")
+        cursor = 0
+        scene_paragraph = 0
         for paragraph in (
             item.strip() for item in re.split("\\n\\s*\\n", scene["text"]) if item.strip()
         ):
+            source_start = scene["text"].index(paragraph, cursor)
+            cursor = source_start + len(paragraph)
+            scene_paragraph += 1
             quoted = [
                 (m.start(), m.end())
                 for m in re.finditer(
@@ -76,7 +84,7 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
                     paragraph,
                 )
             ]
-            evidence = []
+            evidence: list[dict[str, Any]] = []
             counts = dict.fromkeys(groups, 0)
             for token in re.finditer(r"\b[a-z]+\b", paragraph, re.IGNORECASE):
                 if any(start <= token.start() < end for start, end in quoted):
@@ -112,6 +120,15 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
                     and dominant not in {intended, "unknown"},
                 }
             )
+            if include_spans:
+                row = rows[-1]
+                row["source_span"] = {"start": source_start, "end": cursor}
+                row["scene_paragraph"] = scene_paragraph
+                for item in evidence:
+                    item["source_span"] = {
+                        "start": source_start + item["start"],
+                        "end": source_start + item["end"],
+                    }
     shifts = [
         {
             "from": left["paragraph"],

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.0 - 2026-10-16
+
+- Added original-source spans.
+- Preserved legacy defaults and added synthetic boundary and compatibility tests.
+
 ## 1.1.0 - 2026-09-07
 
 - Add explicit scene contracts, viewpoint intent, suppression notes and configurable quote-aware pronoun evidence.

@@ -48,3 +48,13 @@ perspective-shifts examples/sample.json --format markdown
 ```
 
 Supply `scenes` as text objects with optional `intended_viewpoint` (first, second, third, unspecified) and `suppression_note`. Transitions between scenes do not produce shift warnings; a suppression note keeps evidence but suppresses that scene's prompts. Optional `pronoun_rules` supplies first/second/third word arrays, which must not overlap. Evidence gives character offsets and Markdown highlighting outside recognized quotation spans. Tied pronoun counts are unknown. Quotation parsing and viewpoint inference remain heuristics for author review, not findings of narrative errors.
+
+## Version 1.2.0: original-source spans
+
+Set `include_source_spans` to `true` to add a half-open `source_span` to each trimmed paragraph and pronoun evidence item, plus a one-based `scene_paragraph` number. Offsets count Python Unicode characters in the original `text`, or in that row's `scenes[scene - 1].text`; each scene starts at zero. CRLF characters count separately. Existing evidence `start`/`end` remain relative to the trimmed paragraph. Slice the specified original string with `[start:end]` to recover the exact paragraph or pronoun. Defaults, quote handling, counts and scene boundaries are unchanged.
+
+Try the synthetic example:
+
+```bash
+perspective-shifts examples/feature.json --format json
+```
