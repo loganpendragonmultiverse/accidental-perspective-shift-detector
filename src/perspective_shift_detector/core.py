@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import json
 import re
 from itertools import pairwise
@@ -69,6 +70,13 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
             raise ValueError(f"scenes[{scene_index}].intended_viewpoint is invalid")
         if not isinstance(note, str):
             raise TypeError(f"scenes[{scene_index}].suppression_note must be text")
+        scene_quotes = [
+            (match.start(), match.end())
+            for match in re.finditer(
+                r'"[^"]*"|“[^”]*”|(?<!\w)\x27[^\x27]*\x27(?!\w)|‘[^’]*’',
+                scene["text"],
+            )
+        ]
         cursor = 0
         scene_paragraph = 0
         for paragraph in (
@@ -78,11 +86,9 @@ def _perspective(data: dict[str, Any]) -> dict[str, Any]:
             cursor = source_start + len(paragraph)
             scene_paragraph += 1
             quoted = [
-                (m.start(), m.end())
-                for m in re.finditer(
-                    r'"[^"\n]*(?:\n[^"\n]*)*"|“[^”]*”|(?<!\w)\x27[^\x27]*\x27(?!\w)|‘[^’]*’',
-                    paragraph,
-                )
+                (max(start, source_start) - source_start, min(end, cursor) - source_start)
+                for start, end in scene_quotes
+                if start < cursor and end > source_start
             ]
             evidence: list[dict[str, Any]] = []
             counts = dict.fromkeys(groups, 0)
@@ -163,20 +169,26 @@ def render_json(report: dict[str, Any]) -> str:
 def render_markdown(report: dict[str, Any]) -> str:
     lines = [f"# {report['project'].replace('-', ' ').title()} report", ""]
     for row in report["paragraphs"]:
-        text = row["text"]
-        for item in reversed(row["evidence"]):
-            text = (
-                text[: item["start"]]
-                + "**"
-                + text[item["start"] : item["end"]]
-                + "**"
-                + text[item["end"] :]
-            )
+        pieces = []
+        cursor = 0
+        for item in row["evidence"]:
+            pieces.append(_markdown_text(row["text"][cursor : item["start"]]))
+            pieces.append("**" + _markdown_text(row["text"][item["start"] : item["end"]]) + "**")
+            cursor = item["end"]
+        pieces.append(_markdown_text(row["text"][cursor:]))
+        text = "".join(pieces)
         lines.extend([f"### Scene {row['scene']}, paragraph {row['paragraph']}", "", text, ""])
     for key, value in report.items():
         if key not in {"version", "project"}:
             lines.append(f"## {key.replace('_', ' ').title()}")
             lines.append("")
-            lines.append(f"```json\n{json.dumps(value, indent=2, ensure_ascii=False)}\n```")
+            body = json.dumps(value, indent=2, ensure_ascii=False)
+            fence = "`" * max(3, 1 + max((len(run) for run in re.findall(r"`+", body)), default=0))
+            lines.append(f"{fence}json\n{body}\n{fence}")
             lines.append("")
     return "\n".join(lines).rstrip() + "\n"
+
+
+def _markdown_text(value: str) -> str:
+    """Keep authored markup literal while preserving generated evidence emphasis."""
+    return re.sub(r"([\\`*_{}\[\]()#+.!|>~-])", r"\\\1", html.escape(value, quote=False))

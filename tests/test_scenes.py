@@ -20,7 +20,7 @@ def test_scene_contract_quotes_and_suppression() -> None:
     assert first["counts"]["third"] == 0
     assert first["evidence"][0]["word"] == "I"
     assert report["paragraphs"][1]["review_intended_viewpoint"]
-    assert '**I** walk. "He says she knows."' in render_markdown(report)
+    assert '**I** walk\\. "He says she knows\\."' in render_markdown(report)
 
 
 def test_custom_rules_and_ties() -> None:
