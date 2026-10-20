@@ -15,3 +15,9 @@ Local formatting, lint, strict types and regression tests pass. Public release c
 ## Version 1.2.0
 
 Set `include_source_spans` to `true` to add a half-open `source_span` to each trimmed paragraph and pronoun evidence item, plus a one-based `scene_paragraph` number. Offsets count Python Unicode characters in the original `text`, or in that row's `scenes[scene - 1].text`; each scene starts at zero. CRLF characters count separately. Existing evidence `start`/`end` remain relative to the trimmed paragraph. Slice the specified original string with `[start:end]` to recover the exact paragraph or pronoun. Defaults, quote handling, counts and scene boundaries are unchanged.
+
+## Version 1.2.1: quotation boundaries and literal reports
+
+Quotation spans are recognized across blank lines within each scene, so multi-paragraph dialogue does not become narrative pronoun evidence. Scene boundaries remain independent; unmatched quotes remain a documented heuristic limitation. Original source spans still slice the supplied text exactly. Markdown renders authored HTML and formatting as literal text while retaining generated pronoun emphasis, and JSON sections use fences that cannot be closed by manuscript backticks. Output creation uses exclusive file creation, including refusal of dangling symbolic links.
+
+Run the full test suite, including `tests/test_gold.py`, and both packaged examples from an installed wheel and a source distribution before release.

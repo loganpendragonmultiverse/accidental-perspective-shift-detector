@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1 - 2026-10-20
+
+- Keep quoted dialogue excluded across paragraph boundaries within each scene.
+- Render manuscript Markdown and HTML literally and protect embedded JSON fences.
+- Refuse output path races and dangling symbolic links through exclusive creation.
+
 ## 1.2.0 - 2026-10-16
 
 - Added original-source spans.
